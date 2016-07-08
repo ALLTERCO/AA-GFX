@@ -329,7 +329,7 @@ void GFX_fillTriangle (GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1,
 void GFX_drawBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color) {
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t cbyte;
+  uint8_t cbyte=0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
@@ -348,7 +348,7 @@ void GFX_drawBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *
 void GFX_drawBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) {
 	//TODO: use uint16_t cbuf[16] and use it in GFXsetWindowCD it will be 32 times faster 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t cbyte;
+  uint8_t cbyte=0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++ ) {
@@ -371,7 +371,7 @@ void GFX_drawBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t 
 void GFX_drawXBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color) {
 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t cbyte;
+  uint8_t cbyte=0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++) {
@@ -390,7 +390,7 @@ void GFX_drawXBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t 
 void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) {
 	//TODO: use uint16_t cbuf[16] and use it in GFXsetWindowCD it will be 32 times faster 
   int16_t i, j, byteWidth = (w + 7) / 8;
-  uint8_t cbyte;
+  uint8_t cbyte=0;
 
   for(j=0; j<h; j++) {
     for(i=0; i<w; i++ ) {
@@ -410,7 +410,7 @@ void GFX_drawChar(GFX_displayInfo_t *di,  GFXfont* gfxFont, uint8_t flags, int16
 	if(c == '\r') return;//ignore;
 	
 	if(c == '\n') {
-		if (flags & GFX_DCF_ABSOLUTE == 0) {
+		if ((flags & GFX_DCF_ABSOLUTE) == 0) {
 			di->cursor_x  = 0;
 			di->cursor_y += (int16_t)gfxFont->yAdvance;
 		}
@@ -433,10 +433,10 @@ void GFX_drawChar(GFX_displayInfo_t *di,  GFXfont* gfxFont, uint8_t flags, int16
 //	uint8_t  xa = glyph->xAdvance;
 	int8_t   xo = glyph->xOffset;
 	int8_t   yo = glyph->yOffset;
-	uint8_t  xx, yy, bits, bit = 0;
-	int16_t  xo16, yo16;
+	uint8_t  xx, yy, bits=0, bit = 0;
+	int16_t  xo16=0, yo16=0;
 
-	if (flags & GFX_DCF_ABSOLUTE == 0) { //ofset non absolute writes to currsor
+	if ((flags & GFX_DCF_ABSOLUTE) == 0) { //ofset non absolute writes to currsor
 		if (di->wrap) {
 			if (di->cursor_x+glyph->xAdvance>di->width) {
 				di->cursor_x=0;

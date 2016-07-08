@@ -115,4 +115,7 @@ void GFX_drawXBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t 
 void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) ;
 #endif
 
-
+#ifdef GFX_drawChar
+// Draw a character
+void GFX_drawChar(GFX_displayInfo_t *di,  GFXfont* gfxFont, uint8_t flags, int16_t x, int16_t y,  unsigned char c, uint16_t color, uint16_t bg, uint8_t size);
+#endif

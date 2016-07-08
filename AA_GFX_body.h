@@ -403,3 +403,97 @@ void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t
 }
 #endif
 
+#ifdef GFX_drawChar
+// Draw a character
+void GFX_drawChar(GFX_displayInfo_t *di,  GFXfont* gfxFont, uint8_t flags, int16_t x, int16_t y,  unsigned char c, uint16_t color, uint16_t bg, uint8_t size) {
+
+	if(c == '\r') return;//ignore;
+	
+	if(c == '\n') {
+		if (flags & GFX_DCF_ABSOLUTE == 0) {
+			di->cursor_x  = 0;
+			di->cursor_y += (int16_t)gfxFont->yAdvance;
+		}
+		return;
+	}
+	
+
+	
+	// Character is assumed previously filtered by write() to eliminate
+	// newlines, returns, non-printable characters, etc.  Calling drawChar()
+	// directly with 'bad' characters of font may cause mayhem!
+
+	c -= gfxFont->first;
+	GFXglyph *glyph  = (GFXglyph *)(gfxFont->glyph+c);
+	uint8_t  *bitmap = (uint8_t *)gfxFont->bitmap;
+
+	uint16_t bo = glyph->bitmapOffset;
+	uint8_t  w  = glyph->width;
+	uint8_t  h  = glyph->height;
+//	uint8_t  xa = glyph->xAdvance;
+	int8_t   xo = glyph->xOffset;
+	int8_t   yo = glyph->yOffset;
+	uint8_t  xx, yy, bits, bit = 0;
+	int16_t  xo16, yo16;
+
+	if (flags & GFX_DCF_ABSOLUTE == 0) { //ofset non absolute writes to currsor
+		if (di->wrap) {
+			if (di->cursor_x+glyph->xAdvance>di->width) {
+				di->cursor_x=0;
+				di->cursor_y += (int16_t)gfxFont->yAdvance;
+				if (di->cursor_y>di->height) di->cursor_y=0;
+			}
+		}
+		
+		x+=di->cursor_x;
+		y+=di->cursor_y;
+		di->cursor_x+=glyph->xAdvance;
+	}
+	if (w==0 && h==0) { //no bitmap!
+		if (flags & GFX_DCF_SETBG) {
+			GFX_fillRect(di,x, y, glyph->xAdvance*(int16_t)size, gfxFont->yAdvance*(int16_t)size, bg);
+		}
+		return;
+	}
+	
+	if(size > 1) {
+		xo16 = xo;
+		yo16 = yo;
+	}
+
+	// Todo: Add character clipping here
+
+	// NOTE: THERE IS OPTIONAL 'BACKGROUND' COLOR OPTION ON CUSTOM FONTS.
+	// THIS IS ON PURPOSE AND BY DESIGN.  The background color feature
+	// has typically been used with the 'classic' font to overwrite old
+	// screen contents with new data.  This ONLY works because the
+	// characters are a uniform size; it's not a sensible thing to do with
+	// proportionally-spaced fonts with glyphs of varying sizes (and that
+	// may overlap).  To replace previously-drawn text when using a custom
+	// font, use the getTextBounds() function to determine the smallest
+	// rectangle encompassing a string, erase the area with fillRect(),
+	// then draw new text.  This WILL infortunately 'blink' the text, but
+	// is unavoidable.  Drawing 'background' pixels will NOT fix this,
+	// only creates a new set of problems.  Have an idea to work around
+	// this (a canvas object type for MCUs that can afford the RAM and
+	// displays supporting setAddrWindow() and pushColors()), but haven't
+	// implemented this yet.
+
+	for(yy=0; yy<h; yy++) {
+		for(xx=0; xx<w; xx++) {
+			if(!(bit++ & 7)) {
+				bits = bitmap[bo++];
+			}
+			if(bits & 0x80) {
+				if(size == 1) GFX_drawPixel(di,x+xo+xx, y+yo+yy, color);
+				else GFX_fillRect(di,x+(xo16+xx)*size, y+(yo16+yy)*size, size, size, color);
+			} else if (flags & GFX_DCF_SETBG) {
+				if(size == 1) GFX_drawPixel(di,x+xo+xx, y+yo+yy, bg);
+				else GFX_fillRect(di,x+(xo16+xx)*size, y+(yo16+yy)*size, size, size, bg);
+			}
+			bits <<= 1;
+		}
+	}
+
+}
+#endif

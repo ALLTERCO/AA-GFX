@@ -31,7 +31,10 @@ Adafruit invests time and resources providing this open source code, please
 support Adafruit & open-source hardware by purchasing products from Adafruit!
 */
 
-
+#ifdef GFX_rawImgFromFile 
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 #ifndef abs
 #define abs(x) ((x)<0 ? -(x) : (x))
@@ -405,7 +408,7 @@ void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t
 
 #ifdef GFX_drawChar
 // Draw a character
-void GFX_drawChar(GFX_displayInfo_t *di,  GFXfont* gfxFont, uint8_t flags, int16_t x, int16_t y,  unsigned char c, uint16_t color, uint16_t bg, uint8_t size) {
+void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, unsigned char c,uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg) {
 
 	if(c == '\r') return;//ignore;
 	
@@ -495,5 +498,49 @@ void GFX_drawChar(GFX_displayInfo_t *di,  GFXfont* gfxFont, uint8_t flags, int16
 		}
 	}
 
+}
+#endif
+
+
+#ifdef GFX_setCursor 
+void GFX_setCursor(GFX_displayInfo_t *di,int16_t x, int16_t y){
+	di->cursor_x=x;
+	di->cursor_y=y;
+}
+#endif
+
+
+#ifdef GFX_rawImgFromFile
+/*
+#define GFX_RAWIMGFROMFILE_FAILED_TO_MALLOC 1
+#define GFX_RAWIMGFROMFILE_FAILED_TO_OPEN 2
+#define GFX_RAWIMGFROMFILE_FAILED_TO_READ 3
+#define GFX_RAWIMGFROMFILE_OK 0
+*/
+uint8_t GFX_rawImgFromFile(GFX_displayInfo_t *di,const char *fn, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/){
+	if (linestobuffer==0) linestobuffer=1;
+	uint8_t *line_buf=(uint8_t *)(malloc(w*2*linestobuffer));
+	if (!line_buf) return GFX_RAWIMGFROMFILE_FAILED_TO_MALLOC;
+	
+	FILE *f=fopen(fn,"rb");
+	if (f) {
+		int16_t linesleft=h;
+		int16_t linnes_to_io;
+		while (linesleft) {
+			linnes_to_io=(linesleft<linestobuffer?linesleft:linestobuffer);
+			if (fread(line_buf,2*w,linnes_to_io,f)!=linnes_to_io){
+				fclose(f);
+				free(line_buf);
+				return GFX_RAWIMGFROMFILE_FAILED_TO_READ;
+			};
+			GFX_rawImg(di,x,y+(h-linesleft),w,linnes_to_io,line_buf);
+			linesleft-=linnes_to_io;
+		}
+		fclose(f);
+		free(line_buf);
+		return GFX_RAWIMGFROMFILE_OK;
+	} else {
+		return GFX_RAWIMGFROMFILE_FAILED_TO_OPEN;
+	}	
 }
 #endif

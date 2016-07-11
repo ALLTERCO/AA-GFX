@@ -9,6 +9,12 @@
 	di->cursor_x=10;\
 	di->cursor_y=10;\
 	di->wrap=1; 
+
+#ifndef ARDUINO
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+#endif
 	
 #define GFX_DCF_ABSOLUTE 1
 #define GFX_DCF_SETBG 2

@@ -117,5 +117,19 @@ void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t
 
 #ifdef GFX_drawChar
 // Draw a character
-void GFX_drawChar(GFX_displayInfo_t *di,  GFXfont* gfxFont, uint8_t flags, int16_t x, int16_t y,  unsigned char c, uint16_t color, uint16_t bg, uint8_t size);
+void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, unsigned char c,uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg);
+#endif
+
+#ifdef GFX_setCursor
+void GFX_setCursor(GFX_displayInfo_t *di,int16_t x, int16_t y);
+#endif
+
+
+#ifdef GFX_rawImgFromFile
+#define GFX_RAWIMGFROMFILE_FAILED_TO_MALLOC 1
+#define GFX_RAWIMGFROMFILE_FAILED_TO_OPEN 2
+#define GFX_RAWIMGFROMFILE_FAILED_TO_READ 3
+#define GFX_RAWIMGFROMFILE_OK 0
+
+uint8_t GFX_rawImgFromFile(GFX_displayInfo_t *di,const char *fn, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/);
 #endif

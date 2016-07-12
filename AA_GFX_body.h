@@ -510,6 +510,29 @@ void GFX_setCursor(GFX_displayInfo_t *di,int16_t x, int16_t y){
 #endif
 
 
+#ifdef GFX_rawImgFromFH
+uint8_t GFX_rawImgFromFH(GFX_displayInfo_t *di,FILE *f, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/){
+	if (linestobuffer==0) linestobuffer=1;
+	uint8_t *line_buf=(uint8_t *)(malloc(w*2*linestobuffer));
+	if (!line_buf) return GFX_RAWIMGFROMFILE_FAILED_TO_MALLOC;
+	
+	int16_t linesleft=h;
+	int16_t linnes_to_io;
+	while (linesleft) {
+		linnes_to_io=(linesleft<linestobuffer?linesleft:linestobuffer);
+		if (fread(line_buf,2*w,linnes_to_io,f)!=linnes_to_io){
+			free(line_buf);
+			return GFX_RAWIMGFROMFILE_FAILED_TO_READ;
+		};
+		GFX_rawImg(di,x,y+(h-linesleft),w,linnes_to_io,line_buf);
+		linesleft-=linnes_to_io;
+	}
+	free(line_buf);
+	return GFX_RAWIMGFROMFILE_OK;
+} 
+
+#endif
+
 #ifdef GFX_rawImgFromFile
 /*
 #define GFX_RAWIMGFROMFILE_FAILED_TO_MALLOC 1
@@ -518,29 +541,14 @@ void GFX_setCursor(GFX_displayInfo_t *di,int16_t x, int16_t y){
 #define GFX_RAWIMGFROMFILE_OK 0
 */
 uint8_t GFX_rawImgFromFile(GFX_displayInfo_t *di,const char *fn, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/){
-	if (linestobuffer==0) linestobuffer=1;
-	uint8_t *line_buf=(uint8_t *)(malloc(w*2*linestobuffer));
-	if (!line_buf) return GFX_RAWIMGFROMFILE_FAILED_TO_MALLOC;
-	
 	FILE *f=fopen(fn,"rb");
 	if (f) {
-		int16_t linesleft=h;
-		int16_t linnes_to_io;
-		while (linesleft) {
-			linnes_to_io=(linesleft<linestobuffer?linesleft:linestobuffer);
-			if (fread(line_buf,2*w,linnes_to_io,f)!=linnes_to_io){
-				fclose(f);
-				free(line_buf);
-				return GFX_RAWIMGFROMFILE_FAILED_TO_READ;
-			};
-			GFX_rawImg(di,x,y+(h-linesleft),w,linnes_to_io,line_buf);
-			linesleft-=linnes_to_io;
-		}
+		uint8_t res=GFX_rawImgFromFH(di,f,x,y,w,h,linestobuffer);
 		fclose(f);
-		free(line_buf);
-		return GFX_RAWIMGFROMFILE_OK;
+		return res;
 	} else {
 		return GFX_RAWIMGFROMFILE_FAILED_TO_OPEN;
 	}	
 }
 #endif
+

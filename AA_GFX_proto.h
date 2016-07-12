@@ -130,6 +130,7 @@ void GFX_setCursor(GFX_displayInfo_t *di,int16_t x, int16_t y);
 #define GFX_RAWIMGFROMFILE_FAILED_TO_OPEN 2
 #define GFX_RAWIMGFROMFILE_FAILED_TO_READ 3
 #define GFX_RAWIMGFROMFILE_OK 0
-
+#include <stdio.h>
+uint8_t GFX_rawImgFromFH(GFX_displayInfo_t *di,FILE *f, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/);
 uint8_t GFX_rawImgFromFile(GFX_displayInfo_t *di,const char *fn, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/);
 #endif

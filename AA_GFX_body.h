@@ -538,6 +538,7 @@ uint8_t GFX_rawImgFromFH(GFX_displayInfo_t *di,FILE *f, int16_t x, int16_t y,int
 #define GFX_RAWIMGFROMFILE_FAILED_TO_MALLOC 1
 #define GFX_RAWIMGFROMFILE_FAILED_TO_OPEN 2
 #define GFX_RAWIMGFROMFILE_FAILED_TO_READ 3
+#define GFX_RAWIMGFROMFILE_FAILED_TO_SEEK 4
 #define GFX_RAWIMGFROMFILE_OK 0
 */
 uint8_t GFX_rawImgFromFile(GFX_displayInfo_t *di,const char *fn, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/){
@@ -552,3 +553,9 @@ uint8_t GFX_rawImgFromFile(GFX_displayInfo_t *di,const char *fn, int16_t x, int1
 }
 #endif
 
+#ifdef GFX_rawImgFromSpack
+uint8_t GFX_rawImgFromSpack(GFX_displayInfo_t *di,FILE *spf, const spritepac_t *sp, int16_t x, int16_t y, uint16_t linestobuffer/*=0*/){
+	if (fseek(spf,sp->ofs,SEEK_SET)==-1) return GFX_RAWIMGFROMFILE_FAILED_TO_SEEK;
+	return GFX_rawImgFromFH(di,spf,x,y, sp->w,sp->h,linestobuffer);
+}
+#endif

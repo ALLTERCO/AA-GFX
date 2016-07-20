@@ -4,6 +4,8 @@
 
 #include <png.h>
 #include <zlib.h>
+#define RLE_H_EXPORT_ENCODING
+#include "rle.h"
 
 #include COLORMAPH
 
@@ -21,6 +23,15 @@ const char * ct2string(int ct){
 		default: return "unknown";
 	}
 }
+
+void flushrle (rle_encoding_t *enc, void *buf, unsigned bytes){
+	if (fwrite(buf,1,bytes,(FILE*)(enc->userdata))!=bytes){
+		printf ("Failed to complete write to rle file\n");
+		exit(-11);
+	}
+
+}
+
 int main(int argc, char * argv[]){
 	//printf("white->0x%04x red->0x%04x green->0x%04x blue->0x%04x\n",(unsigned)COLORMAP(0xff,0xff,0xff),(unsigned)COLORMAP(0xff,0,0),(unsigned)COLORMAP(0,0xff,0),(unsigned)COLORMAP(0,0,0xff));
 	if (argc<3) {
@@ -80,126 +91,56 @@ int main(int argc, char * argv[]){
 		return -7;
 	}
 	png_bytepp row_pointers=png_get_rows(png_ptr, info_ptr);
-	printf ("file %s is w:%u h:%u \n",argv[1],(unsigned) width,(unsigned) height) ;
+	//printf ("file %s is w:%u h:%u \n",argv[1],(unsigned) width,(unsigned) height) ;
 	fclose (in);
 	FILE *out=fopen (argv[2],"wb");
 	if (!out) {
-		printf ("failed to open %s for writing!\n",argv[2]);
+		printf ("Failed to open %s for writing!\n",argv[2]);
 		return -8;
 	}
 	FILE *rleout=NULL;
-	uint8_t *rledata=NULL;
+	void *rledata=NULL;
 	unsigned rledata_sz=0;
+	rle_encoding_t rleenc;
+	
 	if (argc>=4) {
 		rleout=fopen (argv[3],"wb");
 		if (!rleout) {
-			printf ("failed to open %s for rle writing!\n",argv[3]);
+			printf ("Failed to open %s for rle writing!\n",argv[3]);
 			return -9;
 		}
-		rledata_sz=width*2;
+		rledata_sz=width*2+100;
 		rledata=malloc(rledata_sz);
 		if (!rledata) {
-			printf ("failed to allocate memorey for rle encoding!\n");
+			printf ("Failed to allocate memory for rle encoding!\n");
 			return -10;
 		}
+		rle_encoding_init(&rleenc,rledata,rledata_sz,flushrle,rleout);
 	}
 	
 	png_uint_32 ri=0;
 	for (;ri<height; ri++){
 		png_uint_32 pi=0;
-		int is_rleencoded=(width>=8);
-		unsigned rle_pout=0;
-		uint16_t lastrle_color=COLORMAP(row_pointers[ri][0],row_pointers[ri][1],row_pointers[ri][2]);
-		uint8_t lastrle_cnt=0;
-		uint8_t *rlebpos=rledata;
 		for (;pi<width;pi++) {
 			uint16_t clr=COLORMAP(row_pointers[ri][pi*3],row_pointers[ri][pi*3+1],row_pointers[ri][pi*3+2]);
 			row_pointers[ri][pi*2]=clr>>8;
 			row_pointers[ri][pi*2+1]=clr&0xff;
-			if (rledata_sz && is_rleencoded){
-				int doout=0;
-				if (lastrle_color==clr) {
-					lastrle_cnt++;
-					if (lastrle_cnt==0xff) doout=1;
-				} else {
-					doout=1;
-				}
-				if (doout){
-					rlebpos[0]=lastrle_cnt;
-					rlebpos[1]=lastrle_color>>8;
-					rlebpos[1]=lastrle_color&0xff;
-					rlebpos+=3;
-					rle_pout++;
-					if (rledata_sz -(rledata-rlebpos)<=5){
-						//inifficent for rle row!
-						is_rleencoded=0;
-					} else {
-						lastrle_color=clr;
-						lastrle_cnt=1;
-					}
-				}
-				
-			}
-			
-		}
-		if (rledata_sz && is_rleencoded) { //final out 
-			rlebpos[0]=lastrle_cnt;
-			rlebpos[1]=lastrle_color>>8;
-			rlebpos[1]=lastrle_color&0xff;
-			rlebpos+=3;
-			rle_pout++;
-			if (rledata_sz -(rledata-rlebpos)<=5){
-				//inifficent for rle row!
-				is_rleencoded=0;
-			}
-		}
-		if (is_rleencoded==0) {
-			if (width<=0x3f){
-				uint8_t lineh=width; 
-				if (fwrite(&lineh,1,1,rleout)!=1){
-					printf ("Failed to complete write to %s\n",argv[3]);
-					return -11;
-				}
-			} else {
-				uint8_t lineh[2];
-				lineh[0]=0x40|(((width&0x3fff)>>8)); 
-				lineh[1]=width&0xff; 
-				if (fwrite(&lineh,2,1,rleout)!=1){
-					printf ("Failed to complete write to %s\n",argv[3]);
-					return -11;
-				}
-			}
-			if (fwrite(row_pointers[ri],2,width,rleout)!=width){
-				printf ("Failed to complete write to %s\n",argv[3]);
-				return -11;
-			}
-		} else { //is rle encoded
-			if (rle_pout<=0x3f){
-				uint8_t lineh=0x80|rle_pout; 
-				if (fwrite(&lineh,1,1,rleout)!=1){
-					printf ("Failed to complete write to %s\n",argv[3]);
-					return -11;
-				}
-			} else {
-				uint8_t lineh[2];
-				lineh[0]=0xC0|(((rle_pout&0x3fff)>>8)); 
-				lineh[1]=rle_pout&0xff; 
-				if (fwrite(&lineh,2,1,rleout)!=1){
-					printf ("Failed to complete write to %s\n",argv[3]);
-					return -11;
-				}
-			}
-			if (fwrite(rledata,3,rle_pout,rleout)!=rle_pout){
-				printf ("Failed to complete write to %s\n",argv[3]);
-				return -11;
-			}
+			if (rledata) rle_encoding_add(&rleenc,clr,false);
 		}
 		if (fwrite(row_pointers[ri],2,width,out)!=width){
 			printf ("Failed to complete write to %s\n",argv[2]);
 			return -12;
 		}
 	}
+	
+	long rawsz=ftell(out);
 	fclose(out);
-	printf ("%s filled with color mapped RGB raw data!\n",argv[2]);
+	long rlesz=0;
+	if(rleout){
+		rle_encoding_flush(&rleenc);
+		rlesz=ftell(rleout);
+		fclose(rleout);
+	}
+	printf ("OK! W: %u H: %u rawsz: %ld rlesz: %ld src:%s\n",(unsigned) width,(unsigned) height, rawsz, rlesz,argv[1]) ;
 	return 0;
 }

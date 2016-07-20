@@ -11,7 +11,7 @@ $(error COLORMAP variable not set!)
 endif
 DEFINES+="-DCOLORMAP(r,g,b)=$(COLORMAP)(r,g,b)"
 
-$(BINNAME):png2bin_template.c
+$(BINNAME):png2bin_template.c rle_encoding.c
 	$(CC) -o $(BINNAME) $(^) $(CFLAGS)  $(EXTRACFLAGS) $(DEFINES)
 clean:
 	@rm pngtest

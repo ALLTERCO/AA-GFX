@@ -1,15 +1,43 @@
+/***************************************************
+ * This is part of LGPL AA-GFX library 
+ * 
+ * This library is Copyright (c) 2016, Allterco, Inc.  All rights reserved
+ * 
+ ****************************************************/
+
+/**********
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2.1 of the License, or (at your
+ * option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ **********/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 
 #include <png.h>
 #include <zlib.h>
+
+
 #define RLE_H_EXPORT_ENCODING
+#ifdef RLEDECTEST
+#define RLE_H_EXPORT_DECODING
+#endif
+
 #include "rle.h"
 
 #include COLORMAPH
 
 #define USAGE "Usage!\n"
+/*
 const char * ct2string(int ct){
 	switch (ct) {
 		case PNG_COLOR_TYPE_GRAY       :return "PNG_COLOR_TYPE_GRAY";
@@ -23,7 +51,12 @@ const char * ct2string(int ct){
 		default: return "unknown";
 	}
 }
-
+*/
+#ifdef RLEDECTEST
+unsigned rle_read  (rle_decoding_t *dec, void *buf, unsigned bytes){
+	return fread (buf,1,bytes,(FILE *)dec->userdata);
+}
+#endif
 void flushrle (rle_encoding_t *enc, void *buf, unsigned bytes){
 	if (fwrite(buf,1,bytes,(FILE*)(enc->userdata))!=bytes){
 		printf ("Failed to complete write to rle file\n");
@@ -142,5 +175,28 @@ int main(int argc, char * argv[]){
 		fclose(rleout);
 	}
 	printf ("OK! W: %u H: %u rawsz: %ld rlesz: %ld src:%s\n",(unsigned) width,(unsigned) height, rawsz, rlesz,argv[1]) ;
+#ifdef RLEDECTEST
+	rleout=fopen(argv[3],"rb");
+	out=fopen("RLE_DEC_TEST_out.bin","wb");
+	if (!rleout || !out) {
+		printf("RLEDECTEST failed to open %s for reading or RLE_DEC_TEST_out.bin for writing!\n",argv[3]);
+		return -50;
+	}
+	rle_decoding_t dec;
+	rle_decoding_init (&dec,rle_read,rleout);
+	for (ri=0;ri<height; ri++){
+		if (rle_decoding_read(&dec, rledata, width)!=width){
+			printf("RLEDECTEST failed to decode line  %d of %d!\n",ri,height);
+			return -51;
+			
+		}
+		if (fwrite(rledata,2,width,out)!=width) {
+			printf("RLEDECTEST failed to write line  %d of %d to RLE_DEC_TEST_out.bin\n",ri,height);
+			return -51;
+		}
+	}
+	fclose(out);
+	printf("RLEDECTEST decoded %s back to RLE_DEC_TEST_out.bin!\n",argv[3]);
+#endif
 	return 0;
 }

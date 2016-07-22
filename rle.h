@@ -1,3 +1,25 @@
+/***************************************************
+ * This is part of LGPL AA-GFX library 
+ * 
+ * This library is Copyright (c) 2016, Allterco, Inc.  All rights reserved
+ * 
+ ****************************************************/
+
+/**********
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2.1 of the License, or (at your
+ * option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
+ * more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+ **********/
+
+
 #ifndef GFX_RLE_H_INCLUDED
 #define GFX_RLE_H_INCLUDED
 
@@ -12,7 +34,7 @@
 
 #ifdef RLE_H_EXPORT_DECODING
 typedef struct rle_decoding_tag rle_decoding_t;
-typedef unsigned (*rle_read_t) (rle_decoding_t *dec, void *buf, unsigned bytes);
+typedef unsigned (*rle_read_t) (rle_decoding_t *dec, void *buf, unsigned bytes); //return number fo bytes actually red. less than requested signals error in reading
 struct rle_decoding_tag {
 	void *userdata;
 	rle_read_t rle_read;
@@ -40,7 +62,7 @@ typedef struct  {
 
 typedef struct rle_encoding_tag rle_encoding_t;
 
-typedef void (*flushio_t) (rle_encoding_t *enc, void *buf, unsigned bytes);
+typedef void (*flushio_t) (rle_encoding_t *enc, void *buf, unsigned bytes); //writeout given bytes
 
 
 struct rle_encoding_tag {

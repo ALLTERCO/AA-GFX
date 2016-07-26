@@ -26,6 +26,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+
 void rle_encoding_init(rle_encoding_t *enc, void* buf, unsigned bufsz,flushio_t flushio,void *userdata){
 	memset(enc,0,sizeof(*enc));
 	enc->userdata=userdata;
@@ -34,69 +37,64 @@ void rle_encoding_init(rle_encoding_t *enc, void* buf, unsigned bufsz,flushio_t 
 	enc->iobuf_end=enc->iobuf+bufsz;
 	enc->cseq.start=enc->iobuf;
 	enc->cseq.end=enc->iobuf;
-	enc->cseq.is_compressing=0;
+	enc->cseq.is_compressing=false;
 	enc->cseq.len=0;
 }
-void rle_encodeing_make_room(rle_encoding_t *enc,unsigned size){
-	if (enc->iobuf_end-enc->cseq.end>size) return;
+bool rle_encodeing_make_room(rle_encoding_t *enc,unsigned size){
+	if (enc->iobuf_end-enc->cseq.end>size) return true;
 	
 	unsigned bytestoflush=enc->cseq.start-enc->iobuf;
+	if ((enc->iobuf_end-enc->cseq.end)-bytestoflush<size){
+		return false;
+	}
 	if (bytestoflush) enc->flushio(enc,enc->iobuf,bytestoflush);
 	
 	unsigned bytestomove=enc->cseq.end-enc->cseq.start;
 	if (bytestomove) memmove(enc->iobuf,enc->cseq.start,bytestomove);
 	enc->cseq.start-=bytestoflush;
 	enc->cseq.end-=bytestoflush;
-	
+	return true;
 }
 
-void seq_store(rle_encoding_t *enc){
+//true if successfuly stored
+bool seq_store(rle_encoding_t *enc){
 	rleseq_t *s=&enc->cseq;
 	if (s->start==s->end) { //create 
-		rle_encodeing_make_room(enc,3);
+		if (!rle_encodeing_make_room(enc,3)) return false;
 		s->end[0]=(s->is_compressing?RLE_IS_COMPRESSED:0)|(s->len&RLE_LENSTRIP); //short len of 1 or 2 in some cases 
 		s->end[1]=s->lastvalue>>8; 
 		s->end[2]=s->lastvalue&0xff; 
 		s->end+=3;
 		s->shortstored=true;
-		return;
+		return true;
 	}
-	//already stored .. we now have to fix it
-	if (s->is_compressing) {
-		if (s->shortstored) {
-			if (s->len<=RLE_MAXSHORTLEN) { //we can keep it short and just update:
-				s->start[0]=RLE_IS_COMPRESSED | (s->len&RLE_LENSTRIP); 
-			} else { //expand:
-				rle_encodeing_make_room(enc,1);
-				s->end++;
-				s->start[0]=RLE_IS_COMPRESSED | RLE_IS_LONG | ((s->len>>8)&RLE_LENSTRIP); //long len
-				s->start[1]=s->len&0xff;
-				s->start[2]=s->lastvalue>>8; 
-				s->start[3]=s->lastvalue&0xff; 
-				s->shortstored=false;
-			}
-		} else { //long stored just update:
-			s->start[0]=RLE_IS_COMPRESSED | RLE_IS_LONG | ((s->len>>8)&RLE_LENSTRIP); //long len
-			s->start[1]=s->len&0xff;
-		}
+	//already stored .. we now have to fix it (if we can) 
+	if (!s->shortstored){ //long stored we just need to update..
+		if (s->len>RLE_MAXLONGLEN) return false; //we can't store this!
+		s->start[0]=(s->is_compressing?RLE_IS_COMPRESSED:0) |  RLE_IS_LONG | ((s->len>>8)&RLE_LENSTRIP);
+		s->start[1]=s->len&0xff;
+		return true;
+	}
+	//short stored 
+	if (s->len<=RLE_MAXSHORTLEN) { //we can keep it short and just update:
+		s->start[0]=(s->is_compressing?RLE_IS_COMPRESSED:0) | (s->len&RLE_LENSTRIP); 
+		return true;
+	}
+	//we need to expand .. if we can..
+	if (!rle_encodeing_make_room(enc,1)) return false;
+	s->start[0]=RLE_IS_LONG | (s->is_compressing?RLE_IS_COMPRESSED:0) | ((s->len>>8)&RLE_LENSTRIP);
+	//move some data:
+	if (s->is_compressing) { 
+		s->start[2]=s->lastvalue>>8; 
+		s->start[3]=s->lastvalue&0xff; 
 	} else {//not compressing
-		if (s->shortstored) {
-			if (s->len<=RLE_MAXSHORTLEN) { //we can keep it short and just update:
-				s->start[0]= (s->len&RLE_LENSTRIP); 
-			} else { //expand:
-				rle_encodeing_make_room(enc,1);
-				//move non repeating bytes one down..
-				memmove(s->start+1,s->start,s->end-s->start);
-				s->end++;
-				s->start[0]= RLE_IS_LONG | ((s->len>>8)&RLE_LENSTRIP); //long len
-				s->start[1]=s->len&0xff;
-				s->shortstored=false;
-			}
-		} else { //long stored just update:
-			s->start[0]=RLE_IS_LONG | ((s->len>>8)&RLE_LENSTRIP); //long len
-			s->start[1]=s->len&0xff;
-		}
+		memmove(s->start+1,s->start,s->end-s->start);
 	}
+	s->end++; //as we have grown 
+	//finish new len write
+	s->start[1]=s->len&0xff;
+	s->shortstored=false;
+	return true;
 }
 
 void rle_encoding_add(rle_encoding_t *enc, uint16_t data, bool flushblock) {

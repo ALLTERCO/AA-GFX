@@ -36,6 +36,10 @@ support Adafruit & open-source hardware by purchasing products from Adafruit!
 #include <stdlib.h>
 #endif
 
+#ifdef GFX_putsEx
+#include <string.h>
+#endif
+
 #ifndef abs
 #define abs(x) ((x)<0 ? -(x) : (x))
 #endif
@@ -499,15 +503,55 @@ void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, u
 	}
 
 }
-#endif
-
+#ifdef GFX_putsEx
+// Draw a string
+void GFX_putsEx(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, const char *str, unsigned str_sz/*=0*/  ,uint8_t flags,  uint16_t color, uint16_t bg){
+	if (str_sz==0) str_sz=strlen(str);
+	int ci=0;
+	for (;ci<str_sz;ci++){
+		char c=str[ci];
+		if (c<gfxFont->first ||  c>gfxFont->last)  continue;
+		GFX_drawChar(di,gfxFont,size,c,flags& (~GFX_DCF_ABSOLUTE),0,0,color,bg);
+	}
+}
+#ifdef GFX_puts
+void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg){
+	di->puts_font=gfxFont;
+	di->puts_fontSize=size;
+	di->puts_flags=flags & (~GFX_DCF_ABSOLUTE);
+	di->puts_color=color;
+	di->puts_colorbg=bg;
+	di->cursor_x=x;
+	di->cursor_y=y;
+}
+void GFX_puts(GFX_displayInfo_t *di, const char *str, unsigned str_sz/*=0*/){
+	GFX_putsEx(di,di->puts_font,di->puts_fontSize,str,str_sz,di->puts_flags,di->puts_color,di->puts_colorbg);
+}
+#endif //GFX_puts
+#endif //GFX_putsEx
 
 #ifdef GFX_setCursor 
 void GFX_setCursor(GFX_displayInfo_t *di,int16_t x, int16_t y){
 	di->cursor_x=x;
 	di->cursor_y=y;
 }
-#endif
+#endif //GFX_setCursor
+#ifdef GFX_setCursorRel
+void GFX_setCursorRel(GFX_displayInfo_t *di,int16_t offx, int16_t offy){
+	di->cursor_x+=offx;
+	di->cursor_y+=offy;
+}
+#endif //GFX_setCursorRel
+
+#ifdef GFX_setWrap
+void GFX_setWrap(GFX_displayInfo_t *di,uint8_t wrap){
+	di->wrap=wrap;
+}
+#endif //GFX_setWrap
+
+#endif //GFX_drawChar
+
+
 
 
 #ifdef GFX_rawImgFromFH

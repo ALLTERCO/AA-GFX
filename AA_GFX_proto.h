@@ -118,10 +118,25 @@ void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t
 #ifdef GFX_drawChar
 // Draw a character
 void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, unsigned char c,uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg);
+#ifdef GFX_putsEx
+// Draw a string; all string drawing functions ignore GFX_DCF_ABSOLUTE flag (you must use GFX_setCursor/GFX_setCursorRel or GFX_putsSetup to move the cursor around) 
+void GFX_putsEx(GFX_displayInfo_t *di, const GFXfont* gfxFont,uint8_t size, const char *str, unsigned str_sz/*=0*/  ,uint8_t flags,  uint16_t color, uint16_t bg);
+#ifdef GFX_puts
+void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont,uint8_t size, uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg);
+void GFX_puts(GFX_displayInfo_t *di, const char *str, unsigned str_sz/*=0*/);
+#endif
+#endif
 #endif
 
 #ifdef GFX_setCursor
 void GFX_setCursor(GFX_displayInfo_t *di,int16_t x, int16_t y);
+#endif
+#ifdef GFX_setCursorRel
+void GFX_setCursorRel(GFX_displayInfo_t *di,int16_t offx, int16_t offy);
+#endif
+
+#ifdef GFX_setWrap
+void GFX_setWrap(GFX_displayInfo_t *di,uint8_t wrap);
 #endif
 
 

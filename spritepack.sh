@@ -4,7 +4,7 @@ srcdir=$1
 dstf=$2
 
 if [ "$srcdir" == "" -o  "$dstf" == "" ] ; then 
-	echo "spritepack <srcdir> <dstf> [symname=spack] [tobin=/tftimage1.py] [defpref=spr_]"
+	echo "spritepack <srcdir> <dstf> [symname=spack] [tobin=../png2bin_st7735rc] [defpref=spr_]"
 	exit
 fi
 if [ -r $dstf ] ; then
@@ -17,7 +17,7 @@ if [ "$symname" == "" ] ; then
 fi
 tobin=$4
 if [ "$tobin" == "" ] ; then 
-	tobin=./tftimage1.py
+	tobin="../png2bin_st7735rc"
 fi
 
 defpref=$5
@@ -26,7 +26,7 @@ if [ "$defpref" == "" ] ; then
 fi
 
 
-prambule="#ifndef HAS_SPRITEPAC_T\n#define HAS_SPRITEPAC_T\n#include <stdint.h>\ntypedef struct {\n\tuint16_t w;\n\tuint16_t h;\n\tuint32_t ofs;\n} spritepac_t;\n#endif //HAS_SPRITEPAC_T"
+prambule="#ifndef HAS_SPRITEPAC_T\n#define HAS_SPRITEPAC_T\n#include <stdint.h>\ntypedef struct {\n\tuint16_t w;\n\tuint16_t h;\n\tuint32_t ofs;\n\tuint8_t isrle;\n} spritepac_t;\n#endif //HAS_SPRITEPAC_T"
 
 defines="#define ${defpref}spritepack_file \"`basename $dstf`\"\n"
 sprites=""
@@ -34,6 +34,7 @@ sprites=""
 num=-1;
 ofs=0;
 tmpbin=`mktemp`
+tmprle=`mktemp`
 for fn in $srcdir/*.png; do
 	if [ ! -r $fn ] ; then
 		continue
@@ -43,21 +44,37 @@ for fn in $srcdir/*.png; do
 	num=`expr $num + 1`
 	
 	defines="$defines\n#define ${defpref}${spritename} ${num}\n#define ${defpref}${spritename}_p (${symname}+${num})\n#define ${defpref}${spritename}_w (${symname}[${num}].w)\n#define ${defpref}${spritename}_h (${symname}[${num}].h)\n#define ${defpref}${spritename}_ofs (${symname}[${num}].ofs)\n"
+	resl=`$tobin $fn $tmpbin $tmprle`
+	res=($resl)
+	if [ "${res[0]}" != "OK!" ] ; then 
+		prambule="//!!!!! failed to process $fn err: $resl"
+		continue;
+	fi
+
+	#echo "w: ${res[2]} h: ${res[4]} rawsz: ${res[6]} rlesz: ${res[8]} resl:$resl"
 	
-	dim=(`identify -format "%w %h" $fn`)
-	if [ "$sprites" != "" ]; then
+	if [ "${res[8]}" -lt "${res[6]}" ] ; then
+		isrle=1
+		store=$tmprle
+		storesz=${res[8]}
+	else 
+		isrle=0
+		store=$tmpbin
+		storesz=${res[6]}
+	fi
+	
+	if [ "$sprites" != "" ] ; then
 		sep=",\n\t";
 	else 
 		sep="\t";
 	fi
-	sprites="$sprites$sep{ ${dim[0]},${dim[1]},${ofs} }"
-	$tobin $fn $tmpbin
-	
-	binsz=`stat -c %s $tmpbin`
-	ofs=`expr $ofs + $binsz`
-	cat $tmpbin >> $dstf
+	sprites="$sprites$sep{ ${res[2]},${res[4]},${ofs}, $isrle}"
+
+	ofs=`expr $ofs + $storesz`
+	cat $store >> $dstf
 done
 rm -f $tmbin
+rm -f $tmprle
 
 if [ "$num" != "-1" ] ; then
 	num=`expr $num + 1`

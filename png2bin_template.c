@@ -142,12 +142,18 @@ int main(int argc, char * argv[]){
 			printf ("Failed to open %s for rle writing!\n",argv[3]);
 			return -9;
 		}
-		rledata_sz=width*2+100;
+		//we have planty of memory right?!
+		if (width>1024 || height>1024) rledata_sz=17000;
+		else rledata_sz=width*2*height+2;
+		if (rledata_sz>17000) rledata_sz=17000; //but we don't need more than 17000K
 		rledata=malloc(rledata_sz);
 		if (!rledata) {
 			printf ("Failed to allocate memory for rle encoding!\n");
 			return -10;
 		}
+		#ifdef RLEDECTEST
+		fprintf (stderr,"RLEDECTEST: rledata_sz is %u\n",rledata_sz);
+		#endif
 		rle_encoding_init(&rleenc,rledata,rledata_sz,flushrle,rleout);
 	}
 	

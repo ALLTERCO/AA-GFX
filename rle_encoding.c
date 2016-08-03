@@ -44,7 +44,8 @@ bool rle_encodeing_make_room(rle_encoding_t *enc,unsigned size){
 	if (enc->iobuf_end-enc->cseq.end>size) return true;
 	
 	unsigned bytestoflush=enc->cseq.start-enc->iobuf;
-	if ((enc->iobuf_end-enc->cseq.end)-bytestoflush<size){
+	if ((enc->iobuf_end-enc->cseq.end)+bytestoflush<size){
+		//printf ("rle_encodeing_make_room failes with bytestoflush: %u size needed: %u free space atm: %ld\n",bytestoflush,size,(enc->iobuf_end-enc->cseq.end));
 		return false;
 	}
 	if (bytestoflush) enc->flushio(enc,enc->iobuf,bytestoflush);
@@ -56,7 +57,7 @@ bool rle_encodeing_make_room(rle_encoding_t *enc,unsigned size){
 	return true;
 }
 
-//true if successfuly stored
+//true if successfuly stored; no changes made if false returned
 bool seq_store(rle_encoding_t *enc){
 	rleseq_t *s=&enc->cseq;
 	if (s->start==s->end) { //create 
@@ -103,27 +104,31 @@ void rle_encoding_add(rle_encoding_t *enc, uint16_t data, bool flushblock) {
 		s->len=1;
 		s->is_compressing=true;
 		s->lastvalue=data;
-		seq_store(enc);
+		if (!seq_store(enc)) exit(1); //this should always suceed
 	} else {
 		if (s->lastvalue==data){ //we got a rpt
 			if (s->is_compressing){
 				s->len++;
-				seq_store(enc);
+				if (!seq_store(enc)) { //can't store atm
+					rle_encoding_flush(enc); 
+					s->len=1;
+					if (!seq_store(enc)) exit(2); //this should always suceed
+				}
 			} else { //non compressing seq with a rpt
 				if (s->len==1){ //just switch to compressing
 					s->is_compressing=true;
 					s->len++;
-					seq_store(enc);
+					if (!seq_store(enc)) exit(3); //this should always suceed
 				} else {
 					//trim current seq
 					s->end-=2; //we output words so we rewind with 2 bytes to undo las output
 					s->len--;
-					seq_store(enc);
+					if (!seq_store(enc)) exit(4); //this should always suceed
 					//create new seq
 					s->start=s->end;
 					s->is_compressing=1;
 					s->len=2;
-					seq_store(enc);
+					if (!seq_store(enc)) exit(5); //this should always suceed
 				}
 			}
 		} else { //we got a NON rpt
@@ -134,13 +139,13 @@ void rle_encoding_add(rle_encoding_t *enc, uint16_t data, bool flushblock) {
 					s->start=s->end;
 					s->is_compressing=1;
 					s->len=1;
-					seq_store(enc);
+					if (!seq_store(enc)) exit(6); //this should always suceed
 				} else { //switch  to non compressing seq
 					//this will still be short stored so we need space just for the data
-					rle_encodeing_make_room(enc,2);
+					if (!rle_encodeing_make_room(enc,2)) exit(7); //this should always suceed
 					s->is_compressing=false;
 					s->len++;
-					seq_store(enc);
+					if (!seq_store(enc)) exit(8); //this should always suceed
 					//store non rpt value
 					s->lastvalue=data;
 					s->end[0]=data>>8; 
@@ -149,16 +154,23 @@ void rle_encoding_add(rle_encoding_t *enc, uint16_t data, bool flushblock) {
 				}
 			} else { //non repeating seq
 				//now we will grow but how much:
-				if (s->len==RLE_MAXSHORTLEN) rle_encodeing_make_room(enc,3); //we will switch to long len now
-				else rle_encodeing_make_room(enc,2); //len mode will not change
-				s->len++;
-				seq_store(enc); //probably move some data around 
-				//store non rpt value
-				s->lastvalue=data;
-				s->end[0]=data>>8; 
-				s->end[1]=data&0xff; 
-				s->end+=2;
-				
+				bool cangrow;
+				if (s->len==RLE_MAXSHORTLEN) cangrow=rle_encodeing_make_room(enc,3); //we will switch to long len now
+				else cangrow=rle_encodeing_make_room(enc,2); //len mode will not change
+				if (!cangrow){ //we must flush and create new seq
+					rle_encoding_flush(enc); 
+					s->len=1;
+					s->lastvalue=data;
+					if (!seq_store(enc)) exit(9); //this should always suceed
+				} else {
+					s->len++;
+					if (!seq_store(enc)) exit(10); //this should always suceed
+					//store non rpt value
+					s->lastvalue=data;
+					s->end[0]=data>>8; 
+					s->end[1]=data&0xff; 
+					s->end+=2;
+				}
 			}
 		}
 	}

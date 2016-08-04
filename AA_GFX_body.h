@@ -524,6 +524,24 @@ void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, 
 	di->cursor_x=x;
 	di->cursor_y=y;
 }
+
+#ifdef GFX_putsSet
+void GFX_putsSet(GFX_displayInfo_t *di, int16_t x, int16_t y, uint16_t color, uint16_t bg){
+	di->puts_color=color;
+	di->puts_colorbg=bg;
+	di->cursor_x=x;
+	di->cursor_y=y;
+}
+#endif
+#ifdef GFX_putsSetRel
+void GFX_putsSetRel(GFX_displayInfo_t *di, int16_t offx, int16_t offy, uint16_t color, uint16_t bg){
+	di->puts_color=color;
+	di->puts_colorbg=bg;
+	di->cursor_x+=offx;
+	di->cursor_y+=offy;
+}
+#endif
+
 void GFX_puts(GFX_displayInfo_t *di, const char *str, unsigned str_sz/*=0*/){
 	GFX_putsEx(di,di->puts_font,di->puts_fontSize,str,str_sz,di->puts_flags,di->puts_color,di->puts_colorbg);
 }

@@ -32,6 +32,7 @@
 	di->wrap=1; \
 	AA_GFX_COMMON_DI_INCLUDES_PUTS_INIT(di)
 
+//used in fonts data
 #ifndef ARDUINO
 #ifndef PROGMEM
 #define PROGMEM

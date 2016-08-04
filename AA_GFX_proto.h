@@ -123,6 +123,12 @@ void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, u
 void GFX_putsEx(GFX_displayInfo_t *di, const GFXfont* gfxFont,uint8_t size, const char *str, unsigned str_sz/*=0*/  ,uint8_t flags,  uint16_t color, uint16_t bg);
 #ifdef GFX_puts
 void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont,uint8_t size, uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg);
+#ifdef GFX_putsSet
+void GFX_putsSet(GFX_displayInfo_t *di, int16_t x, int16_t y, uint16_t color, uint16_t bg);
+#endif
+#ifdef GFX_putsSetRel
+void GFX_putsSetRel(GFX_displayInfo_t *di, int16_t offx, int16_t offy, uint16_t color, uint16_t bg);
+#endif
 void GFX_puts(GFX_displayInfo_t *di, const char *str, unsigned str_sz/*=0*/);
 #endif
 #endif

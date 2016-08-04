@@ -68,7 +68,7 @@ for fn in $srcdir/*.png; do
 	else 
 		sep="\t";
 	fi
-	sprites="$sprites$sep{ ${res[2]},${res[4]},${ofs}, $isrle}"
+	sprites="$sprites$sep{ ${res[2]},${res[4]},${ofs}, $isrle} /* ${spritename} */"
 
 	ofs=`expr $ofs + $storesz`
 	cat $store >> $dstf

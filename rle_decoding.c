@@ -67,6 +67,7 @@ bool rle_decoding_load(rle_decoding_t *dec){
 	return true;
 }
 
+//return actual number of words written
 unsigned rle_decoding_read(rle_decoding_t *dec, void *buf, unsigned words){
 	unsigned written=0;
 	uint8_t *b=(uint8_t *)buf;

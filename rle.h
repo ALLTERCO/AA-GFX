@@ -45,6 +45,8 @@ struct rle_decoding_tag {
 };
 
 void rle_decoding_init(rle_decoding_t *dec, rle_read_t rle_read,void *userdata);
+
+//return actual number of words written
 unsigned rle_decoding_read(rle_decoding_t *dec, void *buf, unsigned words);
 
 #endif //RLE_H_EXPORT_DECODING

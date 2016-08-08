@@ -576,7 +576,7 @@ void GFX_setWrap(GFX_displayInfo_t *di,uint8_t wrap){
 uint8_t GFX_rawImgFromFH(GFX_displayInfo_t *di,FILE *f, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/){
 	if (linestobuffer==0) linestobuffer=1;
 	uint8_t *line_buf=(uint8_t *)(malloc(w*2*linestobuffer));
-	if (!line_buf) return GFX_RAWIMGFROMFILE_FAILED_TO_MALLOC;
+	if (!line_buf) return GFX_IMGFROMFILE_FAILED_TO_MALLOC;
 	
 	int16_t linesleft=h;
 	int16_t linnes_to_io;
@@ -584,13 +584,13 @@ uint8_t GFX_rawImgFromFH(GFX_displayInfo_t *di,FILE *f, int16_t x, int16_t y,int
 		linnes_to_io=(linesleft<linestobuffer?linesleft:linestobuffer);
 		if (fread(line_buf,2*w,linnes_to_io,f)!=linnes_to_io){
 			free(line_buf);
-			return GFX_RAWIMGFROMFILE_FAILED_TO_READ;
+			return GFX_IMGFROMFILE_FAILED_TO_READ;
 		};
 		GFX_rawImg(di,x,y+(h-linesleft),w,linnes_to_io,line_buf);
 		linesleft-=linnes_to_io;
 	}
 	free(line_buf);
-	return GFX_RAWIMGFROMFILE_OK;
+	return GFX_IMGFROMFILE_OK;
 } 
 
 #endif
@@ -610,14 +610,73 @@ uint8_t GFX_rawImgFromFile(GFX_displayInfo_t *di,const char *fn, int16_t x, int1
 		fclose(f);
 		return res;
 	} else {
-		return GFX_RAWIMGFROMFILE_FAILED_TO_OPEN;
+		return GFX_IMGFROMFILE_FAILED_TO_OPEN;
 	}	
 }
 #endif
 
 #ifdef GFX_rawImgFromSpack
 uint8_t GFX_rawImgFromSpack(GFX_displayInfo_t *di,FILE *spf, const spritepac_t *sp, int16_t x, int16_t y, uint16_t linestobuffer/*=0*/){
-	if (fseek(spf,sp->ofs,SEEK_SET)==-1) return GFX_RAWIMGFROMFILE_FAILED_TO_SEEK;
+	if (fseek(spf,sp->ofs,SEEK_SET)==-1) return GFX_IMGFROMFILE_FAILED_TO_SEEK;
 	return GFX_rawImgFromFH(di,spf,x,y, sp->w,sp->h,linestobuffer);
 }
 #endif
+
+#ifdef GFX_rleImgFromFH
+static unsigned GFX_rleImgFromFH_rle_read  (rle_decoding_t *dec, void *buf, unsigned bytes){
+	return fread (buf,1,bytes,(FILE *)dec->userdata);
+}
+uint8_t GFX_rleImgFromFH(GFX_displayInfo_t *di,FILE *f, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/){
+	if (linestobuffer==0) linestobuffer=1;
+	uint8_t *line_buf=(uint8_t *)(malloc(w*2*linestobuffer));
+	if (!line_buf) return GFX_IMGFROMFILE_FAILED_TO_MALLOC;
+
+	rle_decoding_t dec;
+	rle_decoding_init (&dec,GFX_rleImgFromFH_rle_read,f);
+	
+	
+	
+	
+	int16_t linesleft=h;
+	int16_t linnes_to_io;
+	while (linesleft) {
+		linnes_to_io=(linesleft<linestobuffer?linesleft:linestobuffer);
+		if (rle_decoding_read(&dec,line_buf,w*linnes_to_io)!=w*linnes_to_io){
+			free(line_buf);
+			return GFX_IMGFROMFILE_FAILED_TO_READ;
+		};
+		GFX_rawImg(di,x,y+(h-linesleft),w,linnes_to_io,line_buf);
+		linesleft-=linnes_to_io;
+	}
+	free(line_buf);
+	return GFX_IMGFROMFILE_OK;
+}
+#endif
+
+#ifdef GFX_rleImgFromFile
+uint8_t GFX_rleImgFromFile(GFX_displayInfo_t *di,const char *fn, int16_t x, int16_t y,int16_t w,int16_t h, uint16_t linestobuffer/*=0*/){
+	FILE *f=fopen(fn,"rb");
+	if (f) {
+		uint8_t res=GFX_rleImgFromFH(di,f,x,y,w,h,linestobuffer);
+		fclose(f);
+		return res;
+	} else {
+		return GFX_IMGFROMFILE_FAILED_TO_OPEN;
+	}	
+}
+#endif //GFX_rleImgFromFile
+
+#ifdef GFX_rleImgFromSpack
+uint8_t GFX_rleImgFromSpack(GFX_displayInfo_t *di,FILE *spf, const spritepac_t *sp, int16_t x, int16_t y, uint16_t linestobuffer/*=0*/){
+	if (fseek(spf,sp->ofs,SEEK_SET)==-1) return GFX_IMGFROMFILE_FAILED_TO_SEEK;
+	return GFX_rleImgFromFH(di,spf,x,y, sp->w,sp->h,linestobuffer);
+}
+#endif //GFX_rleImgFromSpack
+
+#ifdef GFX_ImgFromSpack
+uint8_t GFX_ImgFromSpack(GFX_displayInfo_t *di,FILE *spf, const spritepac_t *sp, int16_t x, int16_t y, uint16_t linestobuffer/*=0*/){
+	if (sp->isrle) return  GFX_rleImgFromSpack(di,spf, sp, x, y, linestobuffer);
+	return GFX_rawImgFromSpack(di,spf, sp, x, y, linestobuffer);
+}
+#endif //GFX_ImgFromSpack
+

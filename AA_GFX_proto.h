@@ -33,60 +33,61 @@ support Adafruit & open-source hardware by purchasing products from Adafruit!
 
 
 
-
-
+#ifndef COLOR_T
+#define COLOR_T uint16_t
+#endif
 
 #ifdef GFX_drawCircle
-void GFX_drawCircle (GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, uint16_t color);
+void GFX_drawCircle (GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, COLOR_T color);
 #endif
 #ifdef GFX_drawCircleHelper
-void GFX_drawCircleHelper(GFX_displayInfo_t *di, int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);
+void GFX_drawCircleHelper(GFX_displayInfo_t *di, int16_t x0, int16_t y0, int16_t r, uint8_t cornername, COLOR_T color);
 #endif
 
 #ifdef GFX_fillCircle
-void GFX_fillCircle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, uint16_t color);
+void GFX_fillCircle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, COLOR_T color);
 #endif
 
 #ifdef  GFX_fillCircleHelper
 // Used to do circles and roundrects
-void GFX_fillCircleHelper(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, uint16_t color);
+void GFX_fillCircleHelper(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, COLOR_T color);
 #endif
 
 #ifdef GFX_drawLine
 // Bresenham's algorithm - thx wikpedia
-void GFX_drawLine(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+void GFX_drawLine(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, COLOR_T color);
 #endif
 
 #ifdef GFX_drawRect
 // Draw a rectangle
-void GFX_drawRect (GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color);
+void GFX_drawRect (GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_t h,COLOR_T color);
 #endif
 
 #ifdef GFX_drawRoundRect
 // Draw a rounded rectangle
-void GFX_drawRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w,int16_t h, int16_t r, uint16_t color);
+void GFX_drawRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w,int16_t h, int16_t r, COLOR_T color);
 #endif
 
 #ifdef GFX_fillRoundRect
 // Fill a rounded rectangle
-void GFX_fillRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, uint16_t color);
+void GFX_fillRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, COLOR_T color);
 #endif
 
 #ifdef GFX_drawTriangle
 // Draw a triangle
-void GFX_drawTriangle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);
+void GFX_drawTriangle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, COLOR_T color);
 #endif
 
 #ifdef GFX_fillTriangle
 // Fill a triangle
-void GFX_fillTriangle (GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color) ;
+void GFX_fillTriangle (GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, COLOR_T color) ;
 #endif
 
 #ifdef GFX_drawBitmapT
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer using the specified
 // foreground color (unset bits are transparent). Each line starts on byte
-void GFX_drawBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color);
+void GFX_drawBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, COLOR_T color);
 #endif
 
 
@@ -95,7 +96,7 @@ void GFX_drawBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer  using the specified
 // foreground (for set bits) and background (for clear bits) colors. Each line starts on byte
-void GFX_drawBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) ;
+void GFX_drawBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, COLOR_T color, COLOR_T bg) ;
 #endif
 
 
@@ -105,29 +106,29 @@ void GFX_drawBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t 
 //Draw XBitMap Files (*.xbm), exported from GIMP, unset bits are transparent
 //Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
 //C Array can be directly used with this function
-void GFX_drawXBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color);
+void GFX_drawXBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, COLOR_T color);
 #endif
 
 #ifdef GFX_drawXBitmapBG
 //Draw XBitMap Files (*.xbm), exported from GIMP,
 //Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
 //C Array can be directly used with this function
-void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) ;
+void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, COLOR_T color, COLOR_T bg) ;
 #endif
 
 #ifdef GFX_drawChar
 // Draw a character
-void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, unsigned char c,uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg);
+void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, unsigned char c,uint8_t flags, int16_t x, int16_t y, COLOR_T color, COLOR_T bg);
 #ifdef GFX_putsEx
 // Draw a string; all string drawing functions ignore GFX_DCF_ABSOLUTE flag (you must use GFX_setCursor/GFX_setCursorRel or GFX_putsSetup to move the cursor around) 
-void GFX_putsEx(GFX_displayInfo_t *di, const GFXfont* gfxFont,uint8_t size, const char *str, unsigned str_sz/*=0*/  ,uint8_t flags,  uint16_t color, uint16_t bg);
+void GFX_putsEx(GFX_displayInfo_t *di, const GFXfont* gfxFont,uint8_t size, const char *str, unsigned str_sz/*=0*/  ,uint8_t flags,  COLOR_T color, COLOR_T bg);
 #ifdef GFX_puts
-void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont,uint8_t size, uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg);
+void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont,uint8_t size, uint8_t flags, int16_t x, int16_t y, COLOR_T color, COLOR_T bg);
 #ifdef GFX_putsSet
-void GFX_putsSet(GFX_displayInfo_t *di, int16_t x, int16_t y, uint16_t color, uint16_t bg);
+void GFX_putsSet(GFX_displayInfo_t *di, int16_t x, int16_t y, COLOR_T color, COLOR_T bg);
 #endif
 #ifdef GFX_putsSetRel
-void GFX_putsSetRel(GFX_displayInfo_t *di, int16_t offx, int16_t offy, uint16_t color, uint16_t bg);
+void GFX_putsSetRel(GFX_displayInfo_t *di, int16_t offx, int16_t offy, COLOR_T color, COLOR_T bg);
 #endif
 void GFX_puts(GFX_displayInfo_t *di, const char *str, unsigned str_sz/*=0*/);
 #endif

@@ -31,6 +31,10 @@ Adafruit invests time and resources providing this open source code, please
 support Adafruit & open-source hardware by purchasing products from Adafruit!
 */
 
+#ifndef COLOR_T
+#define COLOR_T uint16_t
+#endif
+
 #ifdef GFX_rawImgFromFile 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,7 +52,7 @@ support Adafruit & open-source hardware by purchasing products from Adafruit!
 #endif
 
 #ifdef GFX_drawCircle
-void GFX_drawCircle (GFX_displayInfo_t *di, int16_t x0, int16_t y0, int16_t r, uint16_t color) {
+void GFX_drawCircle (GFX_displayInfo_t *di, int16_t x0, int16_t y0, int16_t r, COLOR_T color) {
   int16_t f = 1 - r;
   int16_t ddF_x = 1;
   int16_t ddF_y = -2 * r;
@@ -84,7 +88,7 @@ void GFX_drawCircle (GFX_displayInfo_t *di, int16_t x0, int16_t y0, int16_t r, u
 
 
 #ifdef GFX_drawCircleHelper
-void GFX_drawCircleHelper(GFX_displayInfo_t *di, int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color) {
+void GFX_drawCircleHelper(GFX_displayInfo_t *di, int16_t x0, int16_t y0, int16_t r, uint8_t cornername, COLOR_T color) {
   int16_t f     = 1 - r;
   int16_t ddF_x = 1;
   int16_t ddF_y = -2 * r;
@@ -121,7 +125,7 @@ void GFX_drawCircleHelper(GFX_displayInfo_t *di, int16_t x0, int16_t y0, int16_t
 #endif
 
 #ifdef GFX_fillCircle
-void GFX_fillCircle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, uint16_t color) {
+void GFX_fillCircle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, COLOR_T color) {
   GFX_drawFastVLine(di,x0, y0-r, 2*r+1, color);
   GFX_fillCircleHelper(di,x0, y0, r, 3, 0, color);
 }
@@ -129,7 +133,7 @@ void GFX_fillCircle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, uin
 
 #ifdef  GFX_fillCircleHelper
 // Used to do circles and roundrects
-void GFX_fillCircleHelper(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, uint16_t color) {
+void GFX_fillCircleHelper(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, COLOR_T color) {
   int16_t f     = 1 - r;
   int16_t ddF_x = 1;
   int16_t ddF_y = -2 * r;
@@ -160,7 +164,7 @@ void GFX_fillCircleHelper(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t 
 
 #ifdef GFX_drawLine
 // Bresenham's algorithm - thx wikpedia
-void GFX_drawLine(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {
+void GFX_drawLine(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, COLOR_T color) {
   int16_t steep = abs(y1 - y0) > abs(x1 - x0);
   if (steep) {
     _swap_int16_t(x0, y0);
@@ -203,7 +207,7 @@ void GFX_drawLine(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int1
 
 #ifdef GFX_drawRect
 // Draw a rectangle
-void GFX_drawRect (GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_t h,uint16_t color) {
+void GFX_drawRect (GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_t h,COLOR_T color) {
   GFX_drawFastHLine(di,x, y, w, color);
   GFX_drawFastHLine(di,x, y+h-1, w, color);
   GFX_drawFastVLine(di,x, y, h, color);
@@ -215,7 +219,7 @@ void GFX_drawRect (GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_
 
 #ifdef GFX_drawRoundRect
 // Draw a rounded rectangle
-void GFX_drawRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w,int16_t h, int16_t r, uint16_t color) {
+void GFX_drawRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w,int16_t h, int16_t r, COLOR_T color) {
   // smarter version
   GFX_drawFastHLine(di,x+r  , y    , w-2*r, color); // Top
   GFX_drawFastHLine(di,x+r  , y+h-1, w-2*r, color); // Bottom
@@ -231,7 +235,7 @@ void GFX_drawRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w,int
 
 #ifdef GFX_fillRoundRect
 // Fill a rounded rectangle
-void GFX_fillRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, uint16_t color) {
+void GFX_fillRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, COLOR_T color) {
   // smarter version
   GFX_fillRect(di,x+r, y, w-2*r, h, color);
 
@@ -243,7 +247,7 @@ void GFX_fillRoundRect(GFX_displayInfo_t *di,int16_t x, int16_t y, int16_t w, in
 
 #ifdef GFX_drawTriangle
 // Draw a triangle
-void GFX_drawTriangle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color) {
+void GFX_drawTriangle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, COLOR_T color) {
   GFX_drawLine(di,x0, y0, x1, y1, color);
   GFX_drawLine(di,x1, y1, x2, y2, color);
   GFX_drawLine(di,x2, y2, x0, y0, color);
@@ -252,7 +256,7 @@ void GFX_drawTriangle(GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, 
 
 #ifdef GFX_fillTriangle
 // Fill a triangle
-void GFX_fillTriangle (GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color) {
+void GFX_fillTriangle (GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, COLOR_T color) {
 
   int16_t a, b, y, last;
 
@@ -333,7 +337,7 @@ void GFX_fillTriangle (GFX_displayInfo_t *di,int16_t x0, int16_t y0, int16_t x1,
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer using the specified
 // foreground color (unset bits are transparent). Each line starts on byte
-void GFX_drawBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color) {
+void GFX_drawBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, COLOR_T color) {
 
   int16_t i, j, byteWidth = (w + 7) / 8;
   uint8_t cbyte=0;
@@ -352,7 +356,7 @@ void GFX_drawBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *
 // Draw a 1-bit image (bitmap) at the specified (x,y) position from the
 // provided bitmap buffer  using the specified
 // foreground (for set bits) and background (for clear bits) colors. Each line starts on byte
-void GFX_drawBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) {
+void GFX_drawBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, COLOR_T color, COLOR_T bg) {
 	//TODO: use uint16_t cbuf[16] and use it in GFXsetWindowCD it will be 32 times faster 
   int16_t i, j, byteWidth = (w + 7) / 8;
   uint8_t cbyte=0;
@@ -375,7 +379,7 @@ void GFX_drawBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t 
 //Draw XBitMap Files (*.xbm), exported from GIMP, unset bits are transparent
 //Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
 //C Array can be directly used with this function
-void GFX_drawXBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color) {
+void GFX_drawXBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, COLOR_T color) {
 
   int16_t i, j, byteWidth = (w + 7) / 8;
   uint8_t cbyte=0;
@@ -394,7 +398,7 @@ void GFX_drawXBitmapT(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t 
 //Draw XBitMap Files (*.xbm), exported from GIMP,
 //Usage: Export from GIMP to *.xbm, rename *.xbm to *.c and open in editor.
 //C Array can be directly used with this function
-void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bg) {
+void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, COLOR_T color, COLOR_T bg) {
 	//TODO: use uint16_t cbuf[16] and use it in GFXsetWindowCD it will be 32 times faster 
   int16_t i, j, byteWidth = (w + 7) / 8;
   uint8_t cbyte=0;
@@ -412,7 +416,7 @@ void GFX_drawXBitmapBG(GFX_displayInfo_t *di,int16_t x, int16_t y, const uint8_t
 
 #ifdef GFX_drawChar
 // Draw a character
-void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, unsigned char c,uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg) {
+void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, unsigned char c,uint8_t flags, int16_t x, int16_t y, COLOR_T color, COLOR_T bg) {
 
 	if(c == '\r') return;//ignore;
 	
@@ -505,7 +509,7 @@ void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, u
 }
 #ifdef GFX_putsEx
 // Draw a string
-void GFX_putsEx(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, const char *str, unsigned str_sz/*=0*/  ,uint8_t flags,  uint16_t color, uint16_t bg){
+void GFX_putsEx(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, const char *str, unsigned str_sz/*=0*/  ,uint8_t flags,  COLOR_T color, COLOR_T bg){
 	if (str_sz==0) str_sz=strlen(str);
 	int ci=0;
 	for (;ci<str_sz;ci++){
@@ -515,7 +519,7 @@ void GFX_putsEx(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, con
 	}
 }
 #ifdef GFX_puts
-void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, uint8_t flags, int16_t x, int16_t y, uint16_t color, uint16_t bg){
+void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, uint8_t flags, int16_t x, int16_t y, COLOR_T color, COLOR_T bg){
 	di->puts_font=gfxFont;
 	di->puts_fontSize=size;
 	di->puts_flags=flags & (~GFX_DCF_ABSOLUTE);
@@ -526,7 +530,7 @@ void GFX_putsSetup(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, 
 }
 
 #ifdef GFX_putsSet
-void GFX_putsSet(GFX_displayInfo_t *di, int16_t x, int16_t y, uint16_t color, uint16_t bg){
+void GFX_putsSet(GFX_displayInfo_t *di, int16_t x, int16_t y, COLOR_T color, COLOR_T bg){
 	di->puts_color=color;
 	di->puts_colorbg=bg;
 	di->cursor_x=x;
@@ -534,7 +538,7 @@ void GFX_putsSet(GFX_displayInfo_t *di, int16_t x, int16_t y, uint16_t color, ui
 }
 #endif
 #ifdef GFX_putsSetRel
-void GFX_putsSetRel(GFX_displayInfo_t *di, int16_t offx, int16_t offy, uint16_t color, uint16_t bg){
+void GFX_putsSetRel(GFX_displayInfo_t *di, int16_t offx, int16_t offy, COLOR_T color, COLOR_T bg){
 	di->puts_color=color;
 	di->puts_colorbg=bg;
 	di->cursor_x+=offx;

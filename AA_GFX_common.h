@@ -1,18 +1,25 @@
 #ifndef AA_GFX_COMMON_H_INCLUDED_
 
+#ifndef COLOR_T
+#define COLOR_T uint16_t
+#endif
+#ifndef PUTS_DEF_COLOR
+#define PUTS_DEF_COLOR 0xFFFF
+#endif
+
 #ifdef GFX_puts
-#define AA_GFX_COMMON_DI_INCLUDES_PUTS \
-	const GFXfont* puts_font; \
+#define AA_GFX_COMMON_DI_INCLUDES_PUTS\
+	const GFXfont* puts_font;\
 	uint8_t puts_fontSize;\
 	uint8_t puts_flags;\
-	uint16_t puts_color;\
-	uint16_t puts_colorbg;
+	COLOR_T puts_color;\
+	COLOR_T puts_colorbg;
 	
 #define AA_GFX_COMMON_DI_INCLUDES_PUTS_INIT(di) \
-	di->puts_font=NULL; \
+	di->puts_font=NULL;\
 	di->puts_fontSize=1;\
 	di->puts_flags=0;\
-	di->puts_color=0xFFFF;\
+	di->puts_color=PUTS_DEF_COLOR;\
 	di->puts_colorbg=0;
 	
 #else 

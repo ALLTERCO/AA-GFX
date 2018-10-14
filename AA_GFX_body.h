@@ -449,16 +449,16 @@ void GFX_drawChar(GFX_displayInfo_t *di, const GFXfont* gfxFont, uint8_t size, u
 
 	if ((flags & GFX_DCF_ABSOLUTE) == 0) { //ofset non absolute writes to currsor
 		if (di->wrap) {
-			if (di->cursor_x+glyph->xAdvance>di->width) {
-				di->cursor_x=0;
-				di->cursor_y += (int16_t)gfxFont->yAdvance;
-				if (di->cursor_y>di->height) di->cursor_y=0;
+			if (di->cursor_x + glyph->xAdvance > di->width) {
+				di->cursor_x = 0;
+				di->cursor_y += (int16_t)gfxFont->yAdvance * size;
+				if (di->cursor_y > di->height) di->cursor_y = 0;
 			}
 		}
-		
+
 		x+=di->cursor_x;
 		y+=di->cursor_y;
-		di->cursor_x+=glyph->xAdvance;
+		di->cursor_x += glyph->xAdvance * size;
 	}
 	if (w==0 && h==0) { //no bitmap!
 		if (flags & GFX_DCF_SETBG) {
